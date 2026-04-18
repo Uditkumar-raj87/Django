@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lesson.title }} - Online Course</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .course-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            border-radius: 0;
+        }
+        .course-header h1 {
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .course-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .question-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .question-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .choice-item {
+            margin-bottom: 10px;
+        }
+        .choice-item input[type="radio"] {
+            margin-right: 10px;
+        }
+        .choice-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .choice-item label:hover {
+            background-color: #f0f0f0;
+        }
+        .choice-item input[type="radio"]:checked + label {
+            background-color: #667eea;
+            color: white;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .lesson-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .lesson-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .lesson-info p {
+            color: #666;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .lesson-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="course-header">
+        <div class="container">
+            <h1 class="lesson-title">{{ lesson.title }}</h1>
+            <p>Online Course Assessment</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <!-- Lesson Information -->
+        <div class="lesson-info">
+            <h3>Course Description</h3>
+            <p>{{ lesson.description }}</p>
+        </div>
+
+        <!-- Exam Form -->
+        <form method="POST" action="{% url 'submit' lesson.id %}" id="examForm">
+            {% csrf_token %}
+
+            <!-- Questions -->
+            {% for question in questions %}
+                <div class="question-card">
+                    <div class="question-text">
+                        <span class="badge bg-primary me-2">Q{{ forloop.counter }}</span>
+                        {{ question.question_text }}
+                    </div>
+
+                    <!-- Choices -->
+                    <div class="choices-container">
+                        {% for choice in question.choices.all %}
+                            <div class="choice-item">
+                                <input type="radio" 
+                                       id="choice_{{ choice.id }}" 
+                                       name="question_{{ question.id }}" 
+                                       value="{{ choice.id }}"
+                                       required>
+                                <label for="choice_{{ choice.id }}">
+                                    {{ choice.choice_text }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="submit-btn">
+                    Submit Exam
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

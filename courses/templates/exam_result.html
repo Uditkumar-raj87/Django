@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results - Online Course</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .result-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e0e0e0;
+        }
+        .congratulations-message {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        .failed-message {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .score-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 180px;
+        }
+        .score-box-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .score-box-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .percentage-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .percentage-circle.passed {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .percentage-circle.failed {
+            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        }
+        .result-message {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .message-passed {
+            color: #155724;
+            background-color: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        .message-failed {
+            color: #721c24;
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+        }
+        .course-title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 20px;
+        }
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 30px;
+            background-color: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn-back:hover {
+            background-color: #764ba2;
+            color: white;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            border-radius: 0;
+        }
+        .header-bar h1 {
+            margin: 0;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="container">
+            <h1>Exam Results</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="result-container">
+            <div class="result-header">
+                {% if is_passed %}
+                    <div class="percentage-circle passed">
+                        {{ percentage|floatformat:0 }}%
+                    </div>
+                    <div class="congratulations-message">
+                        🎉 Congratulations! 🎉
+                    </div>
+                    <div class="message-passed">
+                        <strong>You Passed!</strong> Excellent work! You have successfully completed the exam.
+                    </div>
+                {% else %}
+                    <div class="percentage-circle failed">
+                        {{ percentage|floatformat:0 }}%
+                    </div>
+                    <div class="failed-message">
+                        Keep Trying!
+                    </div>
+                    <div class="message-failed">
+                        <strong>You did not pass.</strong> You need at least 70% to pass the exam. Please review the material and try again.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Score Display -->
+            <div class="score-display">
+                <div class="score-box">
+                    <div class="score-box-label">Your Score</div>
+                    <div class="score-box-value">{{ score }}/{{ total_questions }}</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-box-label">Percentage</div>
+                    <div class="score-box-value">{{ percentage|floatformat:1 }}%</div>
+                </div>
+            </div>
+
+            <!-- Course Information -->
+            <div class="course-title">
+                <strong>Course:</strong> {{ lesson.title }}
+            </div>
+            <div style="color: #999; margin-top: 10px;">
+                <small><strong>Submitted at:</strong> {{ submission.submitted_at }}</small>
+            </div>
+
+            <!-- Button -->
+            <div class="text-center">
+                <a href="{% url 'course_details' lesson.id %}" class="btn-back">
+                    Take Exam Again
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

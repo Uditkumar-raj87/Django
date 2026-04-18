@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results - Online Course</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="mb-4">Exam Results</h1>
+
+                {% if is_passed %}
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Congratulations!</h4>
+                        <p class="mb-0">You passed the exam successfully.</p>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Keep trying!</h4>
+                        <p class="mb-0">You need at least 70% to pass.</p>
+                    </div>
+                {% endif %}
+
+                <p><strong>Course:</strong> {{ course.name }}</p>
+                <p><strong>Score:</strong> {{ grade }}/{{ possible }}</p>
+                <p><strong>Percentage:</strong> {{ percentage|floatformat:1 }}%</p>
+
+                <h5 class="mt-4">Exam Results</h5>
+                <div class="list-group">
+                    {% for question in questions %}
+                        <div class="list-group-item">
+                            <div class="fw-semibold">Q{{ forloop.counter }}. {{ question.question_text }}</div>
+                            <ul class="mb-0 mt-2">
+                                {% for choice in question.choices.all %}
+                                    <li>
+                                        {{ choice.choice_text }}
+                                        {% if choice.id in selected_ids %}(Selected){% endif %}
+                                        {% if choice.is_correct %}(Correct){% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <a href="{% url 'course_details' lesson.id %}" class="btn btn-primary mt-4">Retake Exam</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

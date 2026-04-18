@@ -1,16 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from .models import Lesson, Question, Choice, Submission
+from .models import Course, Lesson, Question, Submission
 
 
 @login_required
 def course_details(request, lesson_id):
-    """Display course details and questions."""
+    """Display course details and all related lessons/questions."""
     lesson = get_object_or_404(Lesson, pk=lesson_id)
-    questions = lesson.questions.all()
+    course = lesson.course
+    lessons = course.lessons.all() if course else Lesson.objects.filter(pk=lesson_id)
+    questions = Question.objects.filter(lesson__in=lessons).order_by("lesson_id", "order")
     context = {
+        'course': course,
         'lesson': lesson,
+        'lessons': lessons,
         'questions': questions,
     }
     return render(request, 'course_details_bootstrap.html', context)
@@ -19,75 +23,61 @@ def course_details(request, lesson_id):
 @login_required
 @require_http_methods(["POST"])
 def submit(request, lesson_id):
-    """Handle exam submission and calculate score."""
+    """Handle exam submission and store selected choices."""
     lesson = get_object_or_404(Lesson, pk=lesson_id)
-    questions = lesson.questions.all()
-    
-    score = 0
-    total_questions = questions.count()
-    
-    # Calculate score based on submitted answers
-    for question in questions:
-        question_key = f'question_{question.id}'
-        selected_choice_id = request.POST.get(question_key)
-        
-        if selected_choice_id:
+    course = lesson.course
+
+    selected_ids = []
+    for key, value in request.POST.items():
+        if key.startswith('question_'):
             try:
-                selected_choice = Choice.objects.get(id=selected_choice_id)
-                if selected_choice.is_correct:
-                    score += 1
-            except Choice.DoesNotExist:
-                pass
-    
-    # Create submission record
+                selected_ids.append(int(value))
+            except ValueError:
+                continue
+
     submission = Submission.objects.create(
         user=request.user,
+        course=course,
         lesson=lesson,
-        score=score,
-        total_questions=total_questions
     )
-    
+    submission.selected_choices.set(selected_ids)
+
     return redirect('show_exam_result', submission_id=submission.id)
 
 
 @login_required
 def show_exam_result(request, submission_id):
-    """Display exam results with score and feedback."""
+    """Display exam results and detailed grading."""
     submission = get_object_or_404(Submission, pk=submission_id, user=request.user)
     lesson = submission.lesson
-    questions = lesson.questions.all()
-    percentage = submission.get_percentage()
-    
-    # Build detailed results
-    results_detail = []
+    course = submission.course or lesson.course
+    selected_ids = list(submission.selected_choices.values_list('id', flat=True))
+
+    questions = Question.objects.filter(lesson__course=course).order_by('lesson_id', 'order')
+    total_score = 0
+    possible_score = 0
     for question in questions:
-        question_key = f'question_{question.id}'
-        selected_choice_id = request.POST.get(question_key) if request.method == 'POST' else None
-        
-        result_item = {
-            'question': question,
-            'choices': question.choices.all(),
-            'is_correct': False
-        }
-        
-        # Find the user's answer for this question from the latest submission
-        for choice in question.choices.all():
-            if choice.is_correct:
-                result_item['correct_choice'] = choice
-        
-        results_detail.append(result_item)
-    
-    # Determine pass/fail status
-    passing_percentage = 70
-    is_passed = percentage >= passing_percentage
-    
+        total_score += question.is_get_score(selected_ids)
+        possible_score += question.grade
+
+    submission.score = total_score
+    submission.total_questions = questions.count()
+    submission.save(update_fields=['score', 'total_questions'])
+
+    percentage = (total_score / possible_score * 100) if possible_score else 0
+    is_passed = percentage >= 70
+
     context = {
+        'course': course,
+        'selected_ids': selected_ids,
+        'grade': total_score,
+        'possible': possible_score,
         'submission': submission,
         'lesson': lesson,
+        'questions': questions,
         'percentage': percentage,
         'is_passed': is_passed,
-        'results_detail': results_detail,
-        'score': submission.score,
-        'total_questions': submission.total_questions,
+        'score': total_score,
+        'total_questions': possible_score,
     }
-    return render(request, 'exam_result.html', context)
+    return render(request, 'exam_result_bootstrap.html', context)

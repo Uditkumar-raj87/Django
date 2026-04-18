@@ -1,6 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
-from .models import Lesson, Question, Choice, Submission
+from .models import Course, Lesson, Instructor, Learner, Question, Choice, Submission
+
+
+class LessonInline(admin.StackedInline):
+    model = Lesson
+    extra = 1
 
 
 class QuestionInline(admin.TabularInline):
@@ -42,7 +46,7 @@ class LessonAdmin(admin.ModelAdmin):
     inlines = [QuestionInline]
     fieldsets = (
         ('Lesson Information', {
-            'fields': ('title', 'description', 'content')
+            'fields': ('course', 'title', 'description', 'content')
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
@@ -59,7 +63,7 @@ class SubmissionAdmin(admin.ModelAdmin):
     readonly_fields = ['submitted_at', 'score', 'total_questions']
     fieldsets = (
         ('Submission Information', {
-            'fields': ('user', 'lesson')
+            'fields': ('user', 'course', 'lesson')
         }),
         ('Results', {
             'fields': ('score', 'total_questions')
@@ -71,7 +75,16 @@ class SubmissionAdmin(admin.ModelAdmin):
 
 
 # Register models
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'pub_date']
+    search_fields = ['name']
+    inlines = [LessonInline]
+
+
 admin.site.register(Lesson, LessonAdmin)
+admin.site.register(Instructor)
+admin.site.register(Learner)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
 admin.site.register(Submission, SubmissionAdmin)

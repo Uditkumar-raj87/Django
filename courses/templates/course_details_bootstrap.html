@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ lesson.title }} - Online Course</title>
+    <title>{{ course.name }} - Online Course</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -105,7 +105,7 @@
 <body>
     <div class="course-header">
         <div class="container">
-            <h1 class="lesson-title">{{ lesson.title }}</h1>
+            <h1 class="lesson-title">{{ course.name }}</h1>
             <p>Online Course Assessment</p>
         </div>
     </div>
@@ -114,7 +114,18 @@
         <!-- Lesson Information -->
         <div class="lesson-info">
             <h3>Course Description</h3>
-            <p>{{ lesson.description }}</p>
+            <p>{{ course.description }}</p>
+        </div>
+
+        <div class="lesson-info">
+            <h3>Related Lessons</h3>
+            <ul class="mb-0">
+                {% for related_lesson in lessons %}
+                    <li>{{ related_lesson.title }}</li>
+                {% empty %}
+                    <li>No lessons available.</li>
+                {% endfor %}
+            </ul>
         </div>
 
         <!-- Exam Form -->
